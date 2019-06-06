@@ -441,25 +441,25 @@ palette:
 sprites:
      ;screen resolution 256 : 240 pixels
      ;vert tile attr horiz                        memory index
-  .db $D7, $32, $00, $7C   ;player left sprite    200
-  .db $D7, $33, $00, $84   ;player right sprite   204
-  .db $FF, $34, $00, $FF   ;player bullet         208
+  .db $D7, $0, $00, $7C   ;player left sprite    200
+  .db $D7, $1, $00, $84   ;player right sprite   204
+  .db $FF, $2, $00, $FF   ;player bullet         208
 
-  .db $00, $37, $00, $00   ;enemyBullet           20C
+  .db $00, $2, $00, $00   ;enemyBullet           20C
 
-  .db $08, $36, $00, $20   ;enemy1.1              210
-  .db $08, $36, $00, $40   ;enemy1.2              214
-  .db $08, $36, $00, $60   ;enemy1.3              218
-  .db $08, $36, $00, $80   ;enemy1.4              21C
-  .db $08, $36, $00, $A0   ;enemy1.5              220
-  .db $08, $36, $00, $C0   ;enemy1.6              224
+  .db $08, $3, $00, $20   ;enemy1.1              210
+  .db $08, $3, $00, $40   ;enemy1.2              214
+  .db $08, $3, $00, $60   ;enemy1.3              218
+  .db $08, $3, $00, $80   ;enemy1.4              21C
+  .db $08, $3, $00, $A0   ;enemy1.5              220
+  .db $08, $3, $00, $C0   ;enemy1.6              224
 
-  .db $18, $36, $00, $20   ;enemy2.1              228
-  .db $18, $36, $00, $40   ;enemy2.2              22C
-  .db $18, $36, $00, $60   ;enemy2.3              230
-  .db $18, $36, $00, $80   ;enemy2.4              234
-  .db $18, $36, $00, $A0   ;enemy2.5              238
-  .db $18, $36, $00, $C0   ;enemy2.6              23C
+  .db $18, $3, $00, $20   ;enemy2.1              228
+  .db $18, $3, $00, $40   ;enemy2.2              22C
+  .db $18, $3, $00, $60   ;enemy2.3              230
+  .db $18, $3, $00, $80   ;enemy2.4              234
+  .db $18, $3, $00, $A0   ;enemy2.5              238
+  .db $18, $3, $00, $C0   ;enemy2.6              23C
 
 
 
