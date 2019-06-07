@@ -96,11 +96,11 @@ LoadPalettesLoop:
   BNE LoadPalettesLoop  ; if x = $20, 32 bytes copied, all done
 
 
-  LDA #%10000000   ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
+  LDA #%10000000    ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
   STA $2000
-  LDA #%00010000   ; enable sprites, enable background, no clipping on left side
+  LDA #%00010000    ; enable sprites, enable background, no clipping on left side
   STA $2001
-  LDA #$00        ;;tell the ppu there is no background scrolling
+  LDA #$00          ; tell the ppu there is no background scrolling
   STA $2005
 
 LoadSprites:
@@ -315,7 +315,24 @@ PlayerBulletEnemyCollision:
   ADC #$18
   CMP playerBulletY
   BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
-  JMP PlayerSetBulletOff
+  
+  ; vector translation
+  ; (playerBulletX, playerBulletY) - (enemiesX, enemiesY)
+  LDA playerBulletX
+  PHA                             ; push playerBulletX
+  CLC
+  SBC enemiesX
+  STA playerBulletX
+  LDA playerBulletY
+  PHA                             ; push playerBulletY - enemyY
+  CLC
+  SBC enemiesY
+  STA playerBulletY
+
+  PLA                             ; pull playerBulletY
+  STA playerBulletY
+  PLA                             ; pull playerBulletX
+  STA playerBulletX
 
 PlayerBulletWallCompare:
   LDX #%00                      ; bullets dont collide
