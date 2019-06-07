@@ -280,7 +280,7 @@ BulletMove:
   ; player bullet move
   LDA playerBulletState
   AND #BULLET_ON
-  BEQ PlayerBulletWallCompare
+  BEQ PlayerBulletEnemyCollision     ; PlayerBulletMoveDone too far...
 
   LDA playerBulletY
   CLC
@@ -334,23 +334,24 @@ PlayerBulletEnemyCollision:
 
   LDY #%00
 
-div_vert:
+Div_vert:
   CLC
   SBC #ENEMIES_VERT_STEP
   INY
-  BCC div_vert
+  BCC Div_vert
   TAY
   PHA                             ; push floor(playerBulletY/ENEMIES_VERT_STEP)
 
   LDY #%00
   LDA enemiesBulletX
-div_hor:
+
+Div_hor:
   CLC
   SBC #ENEMIES_HOR_STEP
   INY
-  BCC div_hor
+  BCC Div_hor
   TAY
-  PHA                             ; push floor(playerBulletX/ENEMIES_HOR_STEP)
+  PHA                             ; push floor(playerBulletX/ENEMIES_HOR_STEP
 
   PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
   PLA                             ; pull floor(playerBulletY/ENEMIES_VERT_STEP)
@@ -482,7 +483,9 @@ ReadPlayerControllerLoop:
   DEX
   BNE ReadPlayerControllerLoop
   RTS
- 
+
+
+
 ; bank 1 - vectors section
   
   .bank 1
