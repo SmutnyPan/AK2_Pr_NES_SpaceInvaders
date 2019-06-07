@@ -17,9 +17,11 @@ LEFT_WALL       = $08
 BULLET_SPEED    = $03
 BULLET_ON       = %01
 BULLET_OFF      = %00
-ENEMY_TIME      = $40
-ENEMY_HOR_SPEED = $08
-ENEMY_VERT_SPEED= $08
+ENEMIES_TIME    = $40
+ENEMIES_HOR_STEP = $08
+ENEMIES_VERT_STEP= $08
+ENEMIES_HOR_GAP = $20
+ENEMIES_VERT_GAP = $10
 
 ; variables
   .rsset $0000      ;start variables at $0000
@@ -215,7 +217,7 @@ EnemyMove:
 
   LDA enemiesTimeCounter
   CLC
-  CMP #ENEMY_TIME
+  CMP #ENEMIES_TIME
   BCC EnemyMoveDone
 
   LDA #$00
@@ -228,7 +230,7 @@ EnemyMove:
 EnemyMoveLeft:
   LDA enemiesX
   CLC
-  SBC #ENEMY_HOR_SPEED
+  SBC #ENEMIES_HOR_STEP
   CMP #LEFT_WALL
   BCC EnemyMoveDown
   STA enemiesX
@@ -237,7 +239,7 @@ EnemyMoveLeft:
 EnemyMoveRight:
   LDA enemiesX
   CLC
-  ADC #ENEMY_HOR_SPEED
+  ADC #ENEMIES_HOR_STEP
   ADC #$A0
   CMP #RIGHT_WALL
   BCS EnemyMoveDown
@@ -249,7 +251,7 @@ EnemyMoveRight:
 EnemyMoveDown:
   LDA enemiesY
   CLC
-  ADC #ENEMY_VERT_SPEED
+  ADC #ENEMIES_VERT_STEP
   STA enemiesY
 
   LDA enemiesDirection
@@ -398,23 +400,23 @@ DrawSprites:
   STA $0213
   STA $022B
 
-  ADC #$20
+  ADC #ENEMIES_HOR_GAP
   STA $0217
   STA $022F
 
-  ADC #$20
+  ADC #ENEMIES_HOR_GAP
   STA $021B
   STA $0233
 
-  ADC #$20
+  ADC #ENEMIES_HOR_GAP
   STA $021F
   STA $0237
 
-  ADC #$20
+  ADC #ENEMIES_HOR_GAP
   STA $0223
   STA $023B
 
-  ADC #$20
+  ADC #ENEMIES_HOR_GAP
   STA $0227
   STA $023F
 
@@ -427,7 +429,7 @@ DrawSprites:
   STA $0224
 
   CLC
-  ADC #$10
+  ADC #ENEMIES_VERT_GAP
   STA $0228
   STA $022C
   STA $0230
