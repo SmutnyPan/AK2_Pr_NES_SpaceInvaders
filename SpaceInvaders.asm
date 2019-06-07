@@ -333,18 +333,7 @@ PlayerBulletEnemyCollision:
   STA playerBulletY
 
   LDY #%00
-
-Div_vert:
-  CLC
-  SBC #ENEMIES_VERT_STEP
-  INY
-  BCC Div_vert
-  TAY
-  PHA                             ; push floor(playerBulletY/ENEMIES_VERT_STEP)
-
-  LDY #%00
   LDA enemiesBulletX
-
 Div_hor:
   CLC
   SBC #ENEMIES_HOR_STEP
@@ -353,9 +342,18 @@ Div_hor:
   TAY
   PHA                             ; push floor(playerBulletX/ENEMIES_HOR_STEP
 
-  PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
+  LDY #%00
+Div_vert:
+  CLC
+  SBC #ENEMIES_VERT_STEP
+  INY
+  BCC Div_vert
+  TAY
+  PHA                             ; push floor(playerBulletY/ENEMIES_VERT_STEP)
+
   PLA                             ; pull floor(playerBulletY/ENEMIES_VERT_STEP)
- 
+  PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
+  
   PLA                             ; pull playerBulletY
   STA playerBulletY
   PLA                             ; pull playerBulletX
