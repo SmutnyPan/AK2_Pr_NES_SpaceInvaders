@@ -302,6 +302,7 @@ BulletMove:
   BCS PlayerSetBulletOff        ; if playerBulletX + 4h > enemiesBulletX
 
 PlayerBulletEnemyCollision:
+  LDX #%00                      ; bullets dont collide
   LDA enemiesX
   CMP playerBulletX
   BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
@@ -309,7 +310,12 @@ PlayerBulletEnemyCollision:
   ADC #$A8
   CMP playerBulletX
   BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
-  
+  LDA enemiesY
+  CLC
+  ADC #$18
+  CMP playerBulletY
+  BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
+  JMP PlayerSetBulletOff
 
 PlayerBulletWallCompare:
   LDX #%00                      ; bullets dont collide
