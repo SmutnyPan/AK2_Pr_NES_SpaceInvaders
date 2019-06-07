@@ -22,6 +22,7 @@ ENEMIES_HOR_STEP = $08
 ENEMIES_VERT_STEP= $08
 ENEMIES_HOR_GAP = $20
 ENEMIES_VERT_GAP = $10
+ENEMIES_RIGHT_EDGE = $5 * ENEMIES_HOR_GAP - $08
 
 ; variables
   .rsset $0000      ;start variables at $0000
@@ -240,11 +241,11 @@ EnemyMoveRight:
   LDA enemiesX
   CLC
   ADC #ENEMIES_HOR_STEP
-  ADC #$A0
+  ADC #ENEMIES_RIGHT_EDGE
   CMP #RIGHT_WALL
   BCS EnemyMoveDown
   CLC
-  SBC #$A0
+  SBC #ENEMIES_RIGHT_EDGE
   STA enemiesX
   JMP EnemyShot
 
