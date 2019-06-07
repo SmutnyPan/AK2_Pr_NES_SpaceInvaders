@@ -284,8 +284,10 @@ BulletMove:
   SBC #BULLET_SPEED
   STA playerBulletY
 
+  LDX #%00
+
   CMP enemiesBulletY            
-  BCS PlayerBulletWallCompare   ; if playerBulletY < enemiesBulletY
+  BCS PlayerBulletEnemyCollision   ; if playerBulletY < enemiesBulletY
 
   LDX #%01                      ; bullets collide
 
@@ -293,18 +295,21 @@ BulletMove:
   CLC
   SBC #$04
   CMP enemiesBulletX            
-  BCS PlayerBulletWallCompare   ; if playerBulletX - 4 < enemiesBulletX
+  BCS PlayerBulletEnemyCollision   ; if playerBulletX - 4h < enemiesBulletX
   CLC
   ADC #$08
   CMP enemiesBulletX            
-  BCS PlayerSetBulletOff        ; if playerBulletX + 4 > enemiesBulletX
+  BCS PlayerSetBulletOff        ; if playerBulletX + 4h > enemiesBulletX
 
 PlayerBulletEnemyCollision:
-  LDA playerBulletX
-  CMP enemiesX                  
-  BCS PlayerBulletWallCompare   ; if playerBullet < enemiesX
-
-
+  LDA enemiesX
+  CMP playerBulletX
+  BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
+  CLC
+  ADC #$A8
+  CMP playerBulletX
+  BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
+  
 
 PlayerBulletWallCompare:
   LDX #%00                      ; bullets dont collide
