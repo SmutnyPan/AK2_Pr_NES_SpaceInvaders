@@ -280,7 +280,7 @@ BulletMove:
   ; player bullet move
   LDA playerBulletState
   AND #BULLET_ON
-  BEQ PlayerBulletMoveDone
+  BEQ PlayerBulletWallCompare
 
   LDA playerBulletY
   CLC
@@ -310,7 +310,7 @@ PlayerBulletEnemyCollision:
   CMP playerBulletX
   BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
   CLC
-  ADC #$A8
+  ADC #ENEMIES_RIGHT_EDGE
   CMP playerBulletX
   BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
   LDA enemiesY
@@ -327,11 +327,34 @@ PlayerBulletEnemyCollision:
   SBC enemiesX
   STA playerBulletX
   LDA playerBulletY
-  PHA                             ; push playerBulletY - enemyY
+  PHA                             ; push playerBulletY
   CLC
   SBC enemiesY
   STA playerBulletY
 
+  LDY #%00
+
+div_vert:
+  CLC
+  SBC #ENEMIES_VERT_STEP
+  INY
+  BCC div_vert
+  TAY
+  PHA                             ; push floor(playerBulletY/ENEMIES_VERT_STEP)
+
+  LDY #%00
+  LDA enemiesBulletX
+div_hor:
+  CLC
+  SBC #ENEMIES_HOR_STEP
+  INY
+  BCC div_hor
+  TAY
+  PHA                             ; push floor(playerBulletX/ENEMIES_HOR_STEP)
+
+  PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
+  PLA                             ; pull floor(playerBulletY/ENEMIES_VERT_STEP)
+ 
   PLA                             ; pull playerBulletY
   STA playerBulletY
   PLA                             ; pull playerBulletX
