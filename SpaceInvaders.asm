@@ -36,7 +36,6 @@ enemiesBulletX .rs 1
 enemiesBulletY .rs 1
 enemiesBulletState .rs 1
 enemiesY1 .rs 1
-enemiesY2 .rs 1
 enemiesX .rs 1
 enemiesTimeCounter .rs 1
 enemiesDirection .rs 1
@@ -130,8 +129,6 @@ EnemiesStart:
   STA enemiesY1
   LDA $213
   STA enemiesX
-  LDA $228
-  STA enemiesY2
   LDA $20C
   STA enemiesBulletY
   LDA $20F
@@ -255,11 +252,6 @@ EnemyMoveDown:
   ADC #ENEMY_VERT_SPEED
   STA enemiesY1
 
-  LDA enemiesY2
-  CLC
-  ADC #ENEMY_VERT_SPEED
-  STA enemiesY2
-
   LDA enemiesDirection
   EOR #%01
   STA enemiesDirection
@@ -295,7 +287,7 @@ BulletMove:
   CMP enemiesBulletY            ; playerBulletY < enemiesBulletY
   BCS PlayerBulletWallCompare
 
-  LDX #%01                    ; bullets collide?
+  LDX #%01                      ; bullets collide?
 
   LDA playerBulletX
   CLC
@@ -304,11 +296,14 @@ BulletMove:
   BCS PlayerBulletWallCompare
   CLC
   ADC #$08
-  CMP enemiesBulletX           ; playerBulletX + 4 > enemiesBulletX
+  CMP enemiesBulletX            ; playerBulletX + 4 > enemiesBulletX
   BCS PlayerSetBulletOff
 
+PlayerBulletEnemyCollision:
+
+
 PlayerBulletWallCompare:
-  LDX #%00                  ; bullets dont collide
+  LDX #%00                      ; bullets dont collide
   LDA playerBulletY
   CMP #TOP_WALL
   BCS PlayerBulletMoveDone
@@ -399,7 +394,8 @@ DrawSprites:
   STA $0220
   STA $0224
 
-  LDA enemiesY2
+  CLC
+  ADC #$10
   STA $0228
   STA $022C
   STA $0230
