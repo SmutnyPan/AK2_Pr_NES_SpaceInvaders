@@ -35,7 +35,7 @@ playerBulletState .rs 1
 enemiesBulletX .rs 1
 enemiesBulletY .rs 1
 enemiesBulletState .rs 1
-enemiesY1 .rs 1
+enemiesY .rs 1
 enemiesX .rs 1
 enemiesTimeCounter .rs 1
 enemiesDirection .rs 1
@@ -126,7 +126,7 @@ PlayerStartPosition:
 
 EnemiesStart:
   LDA $210
-  STA enemiesY1
+  STA enemiesY
   LDA $213
   STA enemiesX
   LDA $20C
@@ -247,10 +247,10 @@ EnemyMoveRight:
   JMP EnemyShot
 
 EnemyMoveDown:
-  LDA enemiesY1
+  LDA enemiesY
   CLC
   ADC #ENEMY_VERT_SPEED
-  STA enemiesY1
+  STA enemiesY
 
   LDA enemiesDirection
   EOR #%01
@@ -265,7 +265,7 @@ EnemyShot:
   CLC
   ADC #$4
   STA enemiesBulletX
-  LDA enemiesY1
+  LDA enemiesY
   STA enemiesBulletY
   LDA #BULLET_ON
   STA enemiesBulletState
@@ -386,7 +386,7 @@ DrawSprites:
   STA $0227
   STA $023F
 
-  LDA enemiesY1
+  LDA enemiesY
   STA $0210
   STA $0214
   STA $0218
