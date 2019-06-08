@@ -354,16 +354,24 @@ Div_vert:
   PLA                             ; pull floor(playerBulletY/ENEMIES_VERT_STEP)
   TAY
   LDA #$FA
-Multiplication:
+Multiplication1:
   CLC
   ADC #$06
   DEY
-  BCC Multiplication
+  BCC Multiplication1
 
   TSX
   DEX
   CLC
-  ADC $0100, X 
+  ADC $0100, X
+
+  TXA
+  LDA #$0C
+Multiplication2:
+  CLC
+  ADC #$04
+  DEX
+  BCC Multiplication2
 
   PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
 
