@@ -374,13 +374,15 @@ Multiplication1:
   STA playerBulletX
 
 ; enemy address calculation
-  LDA #$0C
+  LDA #$FC
 Multiplication2:
   CLC
   ADC #$04
   DEX
   BPL Multiplication2
 
+  CLC
+  SBC #$04
   TAX
   LDA #$FF
   CMP $0210, x
