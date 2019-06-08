@@ -339,7 +339,7 @@ Div_hor:
   SBC #ENEMIES_HOR_STEP
   INY
   BCC Div_hor
-  TAY
+  TYA
   PHA                             ; push floor(playerBulletX/ENEMIES_HOR_STEP
 
   LDY #%00
@@ -348,12 +348,25 @@ Div_vert:
   SBC #ENEMIES_VERT_STEP
   INY
   BCC Div_vert
-  TAY
+  TYA
   PHA                             ; push floor(playerBulletY/ENEMIES_VERT_STEP)
 
   PLA                             ; pull floor(playerBulletY/ENEMIES_VERT_STEP)
+  TAY
+  LDA #$FA
+Multiplication:
+  CLC
+  ADC #$06
+  DEY
+  BCC Multiplication
+
+  TSX
+  DEX
+  CLC
+  ADC $0100, X 
+
   PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
-  
+
   PLA                             ; pull playerBulletY
   STA playerBulletY
   PLA                             ; pull playerBulletX
