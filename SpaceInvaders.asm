@@ -310,7 +310,7 @@ PlayerBulletEnemyCollision:
   CMP playerBulletX
   BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
   CLC
-  ADC #ENEMIES_RIGHT_EDGE+$08
+  ADC #ENEMIES_RIGHT_EDGE+ENEMIES_HOR_GAP
   CMP playerBulletX
   BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
   LDA enemiesY
@@ -381,8 +381,6 @@ Multiplication2:
   DEX
   BPL Multiplication2
 
-  CLC
-  SBC #$04
   TAX
   LDA #$FF
   CMP $0210, x
