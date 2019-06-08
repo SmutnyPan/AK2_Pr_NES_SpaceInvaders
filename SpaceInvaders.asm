@@ -460,116 +460,179 @@ DrawSprites:
   TAX
   LDA $0213
   CMP #$FF
-  BEQ Next2_0           ; if not alive
+  BEQ Next1_0           ; if not alive
   TXA
   STA $0213
 
-Next2_0:
+Next1_0:
   LDA $022B
   CMP #$FF
-  BEQ Next1_1 
+  BEQ Next0_1 
   TXA
   STA $022B
 
-Next1_1:
+Next0_1:
   TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $0217
   CMP #$FF
-  BEQ Next2_1
+  BEQ Next1_1
   TXA
   STA $0217
-Next2_1:
+Next1_1:
   LDA $022F
   CMP #$FF
-  BEQ Next1_2
+  BEQ Next0_2
   TXA
   STA $022F
 
-Next1_2:
+Next0_2:
   TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $021B
   CMP #$FF
-  BEQ Next2_2
+  BEQ Next1_2
   TXA
   STA $021B
-Next2_2:
+Next1_2:
   TAX
   LDA $0233
   CMP #$FF
-  BEQ Next1_3
+  BEQ Next0_3
   TXA
   STA $0233
 
-Next1_3:
+Next0_3:
   TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $021F
   CMP #$FF
-  BEQ Next2_3
+  BEQ Next1_3
   TXA
   STA $021F
-Next2_3:
+Next1_3:
   LDA $0237
   CMP #$FF
-  BEQ Next1_4
+  BEQ Next0_4
   TXA
   STA $0237
 
-Next1_4:
+Next0_4:
   TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $0223
   CMP #$FF
-  BEQ Next2_4
+  BEQ Next1_4
   TXA
   STA $0223
-Next2_4:
+Next1_4:
   LDA $023B
   CMP #$FF
-  BEQ Next1_5
+  BEQ Next0_5
   TXA
   STA $023B
 
-Next1_5:
+Next0_5:
   TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $0227
   CMP #$FF
-  BEQ Next2_5
+  BEQ Next1_5
   TXA
   STA $0227
-Next2_5:
+Next1_5:
   LDA $023F
   CMP #$FF
-  BEQ Next
+  BEQ Next0_0Y
   TXA
   STA $023F
 
-Next:
+Next0_0Y:
   LDA enemiesY
+  TAX
+  LDA $0210
+  CMP #$FF
+  BEQ Next0_1Y
+  TXA
   STA $0210
+Next0_1Y:
+  LDA $0214
+  CMP #$FF
+  BEQ Next0_2Y
+  TXA
   STA $0214
+Next0_2Y:
+  LDA $0218
+  CMP #$FF
+  BEQ Next0_3Y
+  TXA
   STA $0218
+Next0_3Y:
+  LDA $021C
+  CMP #$FF
+  BEQ Next0_4Y
+  TXA
   STA $021C
+Next0_4Y:
+  LDA $0220
+  CMP #$FF
+  BEQ Next0_5Y
+  TXA
   STA $0220
+Next0_5Y:
+  LDA $0224
+  CMP #$FF
+  BEQ Next1_0Y
+  TXA
   STA $0224
 
+Next1_0Y:
+  TXA
   CLC
   ADC #ENEMIES_VERT_GAP
+  TAX
+  LDA $0228
+  CMP #$FF
+  BEQ Next1_1Y
+  TXA
   STA $0228
+Next1_1Y:
+  LDA $022C
+  CMP #$FF
+  BEQ Next1_2Y
+  TXA
   STA $022C
+Next1_2Y:
+  LDA $0230
+  CMP #$FF
+  BEQ Next1_3Y
+  TXA
   STA $0230
+Next1_3Y:
+  LDA $0234
+  CMP #$FF
+  BEQ Next1_4Y
+  TXA
   STA $0234
+Next1_4Y:
+  LDA $0238
+  CMP #$FF
+  BEQ Next1_5Y
+  TXA
   STA $0238
+Next1_5Y:
+  LDA $023C
+  CMP #$FF
+  BEQ Next
+  TXA
   STA $023C
 
+Next:
   LDA enemiesBulletX
   STA $020F
   LDA enemiesBulletY
