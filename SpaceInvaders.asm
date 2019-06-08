@@ -497,7 +497,6 @@ Next0_2:
   TXA
   STA $021B
 Next1_2:
-  TAX
   LDA $0233
   CMP #$FF
   BEQ Next0_3
