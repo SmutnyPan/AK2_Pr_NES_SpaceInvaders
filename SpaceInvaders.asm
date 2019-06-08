@@ -19,7 +19,7 @@ BULLET_ON       = %01
 BULLET_OFF      = %00
 ENEMIES_TIME    = $40
 ENEMIES_HOR_STEP = $08
-ENEMIES_VERT_STEP= $08
+ENEMIES_VERT_STEP= $10
 ENEMIES_HOR_GAP = $20
 ENEMIES_VERT_GAP = $10
 ENEMIES_RIGHT_EDGE = $5 * ENEMIES_HOR_GAP - $08
@@ -310,12 +310,12 @@ PlayerBulletEnemyCollision:
   CMP playerBulletX
   BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
   CLC
-  ADC #ENEMIES_RIGHT_EDGE
+  ADC #ENEMIES_RIGHT_EDGE+$08
   CMP playerBulletX
   BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
   LDA enemiesY
   CLC
-  ADC #$18
+  ADC #ENEMIES_VERT_GAP+$08
   CMP playerBulletY
   BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
   
@@ -333,34 +333,38 @@ PlayerBulletEnemyCollision:
   STA playerBulletY
 
   LDY #%00
-  LDA enemiesBulletX
+  LDA playerBulletX
 Div_hor:
   CLC
-  SBC #ENEMIES_HOR_STEP
+  SBC #ENEMIES_HOR_GAP
   INY
-  BCC Div_hor
+  BCS Div_hor
+  DEY
   TYA
   PHA                             ; push floor(playerBulletX/ENEMIES_HOR_STEP
 
   LDY #%00
+  LDA playerBulletY
 Div_vert:
-  CLC
-  SBC #ENEMIES_VERT_STEP
   INY
-  BCC Div_vert
+  CLC
+  SBC #ENEMIES_VERT_GAP
+  BCS Div_vert
+  DEY
 
   LDA #$FA
 Multiplication1:
   CLC
   ADC #$06
   DEY
-  BCC Multiplication1
+  BPL Multiplication1
 
 ; add floor(playerBulletX/ENEMIES_HOR_STEP) from stack
   TSX
   INX
   CLC
   ADC $0100, x
+  TAX
 
   PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
 
@@ -375,7 +379,7 @@ Multiplication2:
   CLC
   ADC #$04
   DEX
-  BCC Multiplication2
+  BPL Multiplication2
 
   TAX
   LDA #$FF
@@ -456,96 +460,96 @@ DrawSprites:
   TAX
   LDA $0213
   CMP #$FF
-  TXA
   BEQ Next2_0           ; if not alive
+  TXA
   STA $0213
 
 Next2_0:
-  TAX
   LDA $022B
   CMP #$FF
-  TXA
   BEQ Next1_1 
+  TXA
   STA $022B
 
 Next1_1:
+  TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $0217
   CMP #$FF
-  TXA
   BEQ Next2_1
+  TXA
   STA $0217
 Next2_1:
-  TAX
   LDA $022F
   CMP #$FF
-  TXA
   BEQ Next1_2
+  TXA
   STA $022F
 
 Next1_2:
+  TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $021B
   CMP #$FF
-  TXA
   BEQ Next2_2
+  TXA
   STA $021B
 Next2_2:
   TAX
   LDA $0233
   CMP #$FF
-  TXA
   BEQ Next1_3
+  TXA
   STA $0233
 
 Next1_3:
+  TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $021F
   CMP #$FF
-  TXA
   BEQ Next2_3
+  TXA
   STA $021F
 Next2_3:
-  TAX
   LDA $0237
   CMP #$FF
-  TXA
   BEQ Next1_4
+  TXA
   STA $0237
 
 Next1_4:
+  TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $0223
   CMP #$FF
-  TXA
   BEQ Next2_4
+  TXA
   STA $0223
 Next2_4:
-  TAX
   LDA $023B
   CMP #$FF
-  TXA
   BEQ Next1_5
+  TXA
   STA $023B
 
 Next1_5:
+  TXA
   ADC #ENEMIES_HOR_GAP
   TAX
   LDA $0227
   CMP #$FF
-  TXA
   BEQ Next2_5
+  TXA
   STA $0227
 Next2_5:
-  TAX
   LDA $023F
   CMP #$FF
-  TXA
   BEQ Next
+  TXA
   STA $023F
 
 Next:
