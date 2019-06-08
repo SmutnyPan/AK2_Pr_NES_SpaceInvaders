@@ -17,12 +17,12 @@ LEFT_WALL       = $08
 BULLET_SPEED    = $03
 BULLET_ON       = %01
 BULLET_OFF      = %00
-ENEMIES_TIME    = $40
-ENEMIES_HOR_STEP = $08
-ENEMIES_VERT_STEP= $10
+ENEMIES_TIME    = $20
+ENEMIES_HOR_STEP = $04
+ENEMIES_VERT_STEP= $08
 ENEMIES_HOR_GAP = $20
 ENEMIES_VERT_GAP = $10
-ENEMIES_RIGHT_EDGE = $5 * ENEMIES_HOR_GAP - $08
+ENEMIES_RIGHT_EDGE = $5 * ENEMIES_HOR_GAP + $08
 
 ; variables
   .rsset $0000      ;start variables at $0000
@@ -310,12 +310,12 @@ PlayerBulletEnemyCollision:
   CMP playerBulletX
   BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
   CLC
-  ADC #ENEMIES_RIGHT_EDGE+ENEMIES_HOR_GAP
+  ADC #ENEMIES_RIGHT_EDGE
   CMP playerBulletX
   BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
   LDA enemiesY
   CLC
-  ADC #ENEMIES_VERT_GAP+$08
+  ADC #ENEMIES_VERT_GAP+$10
   CMP playerBulletY
   BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
   
@@ -341,7 +341,7 @@ Div_hor:
   BCS Div_hor
   DEY
   TYA
-  PHA                             ; push floor(playerBulletX/ENEMIES_HOR_STEP
+  STA $0400                            ; store floor(playerBulletX/ENEMIES_HOR_STEP) in  $0400
 
   LDY #%00
   LDA playerBulletY
@@ -360,13 +360,9 @@ Multiplication1:
   BPL Multiplication1
 
 ; add floor(playerBulletX/ENEMIES_HOR_STEP) from stack
-  TSX
-  INX
   CLC
-  ADC $0100, x
+  ADC $0400
   TAX
-
-  PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
 
   PLA                             ; pull playerBulletY
   STA playerBulletY
