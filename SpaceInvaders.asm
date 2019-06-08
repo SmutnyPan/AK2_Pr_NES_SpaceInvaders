@@ -302,10 +302,10 @@ BulletMove:
   CLC
   ADC #$08
   CMP enemiesBulletX            
-  BCS PlayerSetBulletOff        ; if playerBulletX + 4h > enemiesBulletX
+  BCC PlayerBulletEnemyCollision        ; if playerBulletX + 4h > enemiesBulletX
+  JMP PlayerSetBulletOff
 
 PlayerBulletEnemyCollision:
-  LDX #%00                      ; bullets dont collide
   LDA enemiesX
   CMP playerBulletX
   BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
@@ -348,11 +348,7 @@ Div_vert:
   SBC #ENEMIES_VERT_STEP
   INY
   BCC Div_vert
-  TYA
-  PHA                             ; push floor(playerBulletY/ENEMIES_VERT_STEP)
 
-  PLA                             ; pull floor(playerBulletY/ENEMIES_VERT_STEP)
-  TAY
   LDA #$FA
 Multiplication1:
   CLC
@@ -360,18 +356,11 @@ Multiplication1:
   DEY
   BCC Multiplication1
 
+; add floor(playerBulletX/ENEMIES_HOR_STEP) from stack
   TSX
-  DEX
+  INX
   CLC
-  ADC $0100, X
-
-  TXA
-  LDA #$0C
-Multiplication2:
-  CLC
-  ADC #$04
-  DEX
-  BCC Multiplication2
+  ADC $0100, x
 
   PLA                             ; pull floor(playerBulletX/ENEMIES_HOR_STEP)
 
@@ -379,6 +368,29 @@ Multiplication2:
   STA playerBulletY
   PLA                             ; pull playerBulletX
   STA playerBulletX
+
+; enemy address calculation
+  LDA #$0C
+Multiplication2:
+  CLC
+  ADC #$04
+  DEX
+  BCC Multiplication2
+
+  TAX
+  LDA #$FF
+  CMP $0210, x
+  BEQ PlayerBulletWallCompare
+
+  STA $0210, x
+  TXA
+  CLC
+  ADC #$03
+  TAX
+  LDA #$FF
+  STA $0210, x
+
+  JMP PlayerSetBulletOff
 
 PlayerBulletWallCompare:
   LDX #%00                      ; bullets dont collide
@@ -441,29 +453,102 @@ DrawSprites:
   CLC
 
   LDA enemiesX
+  TAX
+  LDA $0213
+  CMP #$FF
+  TXA
+  BEQ Next2_0           ; if not alive
   STA $0213
+
+Next2_0:
+  TAX
+  LDA $022B
+  CMP #$FF
+  TXA
+  BEQ Next1_1 
   STA $022B
 
+Next1_1:
   ADC #ENEMIES_HOR_GAP
+  TAX
+  LDA $0217
+  CMP #$FF
+  TXA
+  BEQ Next2_1
   STA $0217
+Next2_1:
+  TAX
+  LDA $022F
+  CMP #$FF
+  TXA
+  BEQ Next1_2
   STA $022F
 
+Next1_2:
   ADC #ENEMIES_HOR_GAP
+  TAX
+  LDA $021B
+  CMP #$FF
+  TXA
+  BEQ Next2_2
   STA $021B
+Next2_2:
+  TAX
+  LDA $0233
+  CMP #$FF
+  TXA
+  BEQ Next1_3
   STA $0233
 
+Next1_3:
   ADC #ENEMIES_HOR_GAP
+  TAX
+  LDA $021F
+  CMP #$FF
+  TXA
+  BEQ Next2_3
   STA $021F
+Next2_3:
+  TAX
+  LDA $0237
+  CMP #$FF
+  TXA
+  BEQ Next1_4
   STA $0237
 
+Next1_4:
   ADC #ENEMIES_HOR_GAP
+  TAX
+  LDA $0223
+  CMP #$FF
+  TXA
+  BEQ Next2_4
   STA $0223
+Next2_4:
+  TAX
+  LDA $023B
+  CMP #$FF
+  TXA
+  BEQ Next1_5
   STA $023B
 
+Next1_5:
   ADC #ENEMIES_HOR_GAP
+  TAX
+  LDA $0227
+  CMP #$FF
+  TXA
+  BEQ Next2_5
   STA $0227
+Next2_5:
+  TAX
+  LDA $023F
+  CMP #$FF
+  TXA
+  BEQ Next
   STA $023F
 
+Next:
   LDA enemiesY
   STA $0210
   STA $0214
@@ -523,19 +608,19 @@ sprites:
 
   .db $00, $2, $00, $00   ;enemyBullet           20C
 
-  .db $08, $3, $00, $20   ;enemy1.1              210
-  .db $08, $3, $00, $40   ;enemy1.2              214
-  .db $08, $3, $00, $60   ;enemy1.3              218
-  .db $08, $3, $00, $80   ;enemy1.4              21C
-  .db $08, $3, $00, $A0   ;enemy1.5              220
-  .db $08, $3, $00, $C0   ;enemy1.6              224
+  .db $08, $3, $00, $20   ;enemy0.0              210
+  .db $08, $3, $00, $40   ;enemy0.1              214
+  .db $08, $3, $00, $60   ;enemy0.2              218
+  .db $08, $3, $00, $80   ;enemy0.3              21C
+  .db $08, $3, $00, $A0   ;enemy0.4              220
+  .db $08, $3, $00, $C0   ;enemy0.5              224
 
-  .db $18, $3, $00, $20   ;enemy2.1              228
-  .db $18, $3, $00, $40   ;enemy2.2              22C
-  .db $18, $3, $00, $60   ;enemy2.3              230
-  .db $18, $3, $00, $80   ;enemy2.4              234
-  .db $18, $3, $00, $A0   ;enemy2.5              238
-  .db $18, $3, $00, $C0   ;enemy2.6              23C
+  .db $18, $3, $00, $20   ;enemy1.0              228
+  .db $18, $3, $00, $40   ;enemy1.1              22C
+  .db $18, $3, $00, $60   ;enemy1.2              230
+  .db $18, $3, $00, $80   ;enemy1.3              234
+  .db $18, $3, $00, $A0   ;enemy1.4              238
+  .db $18, $3, $00, $C0   ;enemy1.5              23C
 
 
 
