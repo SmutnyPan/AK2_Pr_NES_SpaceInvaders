@@ -6,7 +6,7 @@
   
 ; constants
 STATE_TITLE     = $00  ; displaying title screen
-STATE_PLAYING   = $01  ; move player/enemies/projectiles, check for collisions
+STATE_PLAYING   = $01  ; move player/enemy/projectiles, check for collisions
 STATE_GAMEOVER  = $02  ; displaying game over screen
 
 RIGHT_WALL      = $E8
@@ -17,12 +17,12 @@ LEFT_WALL       = $08
 BULLET_SPEED    = $03
 BULLET_ON       = %01
 BULLET_OFF      = %00
-ENEMIES_TIME    = $20
-ENEMIES_HOR_STEP = $04
-ENEMIES_VERT_STEP= $08
-ENEMIES_HOR_GAP = $20
-ENEMIES_VERT_GAP = $10
-ENEMIES_RIGHT_EDGE = $5 * ENEMIES_HOR_GAP + $08
+ENEMY_TIME    = $20
+ENEMY_HOR_STEP = $04
+ENEMY_VERT_STEP= $08
+ENEMY_HOR_GAP = $20
+ENEMY_VERT_GAP = $10
+ENEMY_RIGHT_EDGE = $5 * ENEMY_HOR_GAP + $08
 
 ; variables
   .rsset $0000      ;start variables at $0000
@@ -35,13 +35,13 @@ playerBulletX .rs 1
 playerBulletY .rs 1
 playerBulletState .rs 1
 
-enemiesBulletX .rs 1
-enemiesBulletY .rs 1
-enemiesBulletState .rs 1
-enemiesY .rs 1
-enemiesX .rs 1
-enemiesTimeCounter .rs 1
-enemiesDirection .rs 1
+enemyBulletX .rs 1
+enemyBulletY .rs 1
+enemyBulletState .rs 1
+enemyY .rs 1
+enemyX .rs 1
+enemyTimeCounter .rs 1
+enemyDirection .rs 1
 
 
 ; bank 0 - game code section
@@ -130,18 +130,18 @@ PlayerStart:
 
 EnemiesStart:
   LDA $210
-  STA enemiesY
+  STA enemyY
   LDA $213
-  STA enemiesX
+  STA enemyX
   LDA $20C
-  STA enemiesBulletY
+  STA enemyBulletY
   LDA $20F
-  STA enemiesBulletX
+  STA enemyBulletX
   LDA #BULLET_OFF
-  STA enemiesBulletState
+  STA enemyBulletState
   LDA #$00
-  STA enemiesTimeCounter
-  STA enemiesDirection
+  STA enemyTimeCounter
+  STA enemyDirection
   RTS
   
 
@@ -216,64 +216,64 @@ PlayerShotDone:
   RTS                   ; end of PlayerMove
 
 EnemyMove:
-  INC enemiesTimeCounter
+  INC enemyTimeCounter
 
-  LDA enemiesTimeCounter
+  LDA enemyTimeCounter
   CLC
-  CMP #ENEMIES_TIME
+  CMP #ENEMY_TIME
   BCC EnemyMoveDone
 
   LDA #$00
-  STA enemiesTimeCounter
+  STA enemyTimeCounter
 
-  LDA enemiesDirection
+  LDA enemyDirection
   AND #%01
   BEQ EnemyMoveRight
 
 EnemyMoveLeft:
-  LDA enemiesX
+  LDA enemyX
   CLC
-  SBC #ENEMIES_HOR_STEP
+  SBC #ENEMY_HOR_STEP
   CMP #LEFT_WALL
   BCC EnemyMoveDown
-  STA enemiesX
+  STA enemyX
   JMP EnemyShot
 
 EnemyMoveRight:
-  LDA enemiesX
+  LDA enemyX
   CLC
-  ADC #ENEMIES_HOR_STEP
-  ADC #ENEMIES_RIGHT_EDGE
+  ADC #ENEMY_HOR_STEP
+  ADC #ENEMY_RIGHT_EDGE
   CMP #RIGHT_WALL
   BCS EnemyMoveDown
   CLC
-  SBC #ENEMIES_RIGHT_EDGE
-  STA enemiesX
+  SBC #ENEMY_RIGHT_EDGE
+  STA enemyX
   JMP EnemyShot
 
 EnemyMoveDown:
-  LDA enemiesY
+  LDA enemyY
   CLC
-  ADC #ENEMIES_VERT_STEP
-  STA enemiesY
+  ADC #ENEMY_VERT_STEP
+  STA enemyY
 
-  LDA enemiesDirection
+  LDA enemyDirection
   EOR #%01
-  STA enemiesDirection
+  STA enemyDirection
 
 EnemyShot:
-  LDA enemiesBulletState
+  LDA enemyBulletState
   EOR #BULLET_ON
   BEQ EnemyShotDone
 
   LDA playerXPos
   CLC
   ADC #$4
-  STA enemiesBulletX
-  LDA enemiesY
-  STA enemiesBulletY
+  STA enemyBulletX
+  LDA enemyY
+  STA enemyBulletY
   LDA #BULLET_ON
-  STA enemiesBulletState
+  STA enemyBulletState
 EnemyShotDone: 
 EnemyMoveDone:
   RTS
@@ -291,37 +291,37 @@ BulletMove:
 
   LDX #%00
 
-  CMP enemiesBulletY            
-  BCS PlayerBulletEnemyCollision   ; if playerBulletY < enemiesBulletY
+  CMP enemyBulletY            
+  BCS PlayerBulletEnemyCollision   ; if playerBulletY < enemyBulletY
 
   LDX #%01                      ; bullets collide
 
   LDA playerBulletX
   CLC
   SBC #$04
-  CMP enemiesBulletX            
-  BCS PlayerBulletEnemyCollision   ; if playerBulletX - 4h < enemiesBulletX
+  CMP enemyBulletX            
+  BCS PlayerBulletEnemyCollision   ; if playerBulletX - 4h < enemyBulletX
   CLC
   ADC #$08
-  CMP enemiesBulletX            
-  BCC PlayerBulletEnemyCollision        ; if playerBulletX + 4h > enemiesBulletX
+  CMP enemyBulletX            
+  BCC PlayerBulletEnemyCollision        ; if playerBulletX + 4h > enemyBulletX
   JMP PlayerSetBulletOff
 
 PlayerBulletEnemyCollision:
-;  LDA enemiesX
+;  LDA enemyX
 ;  CLC
 ;  SBC #$04
 ;  CMP playerBulletX
-;  BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
+;  BCS PlayerBulletWallCompare     ; if playerBulletX < enemyX
 ;  CLC
-;  ADC #ENEMIES_RIGHT_EDGE+$04
+;  ADC #ENEMY_RIGHT_EDGE+$04
 ;  CMP playerBulletX
-;  BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
-;  LDA enemiesY
+;  BCC PlayerBulletWallCompare     ; if playerBulletX > enemyX + A8h
+;  LDA enemyY
 ;  CLC
-;  ADC #ENEMIES_VERT_GAP+$0A
+;  ADC #ENEMY_VERT_GAP+$0A
 ;  CMP playerBulletY
-;  BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
+;  BCC PlayerBulletWallCompare     ; if playerBulletY > enemyY + 18h
 
   LDA #$FC
   TAX
@@ -373,7 +373,7 @@ PlayerSetBulletOff:
 
 PlayerBulletMoveDone:
   ; enemy bullet move
-  LDA enemiesBulletState
+  LDA enemyBulletState
   AND #BULLET_ON
   BEQ EnemyBulletMoveDone
 
@@ -381,37 +381,37 @@ PlayerBulletMoveDone:
   EOR #%01
   BEQ EnemyBulletSetOff     ; if bullets collide
 
-  LDA enemiesBulletY
+  LDA enemyBulletY
   CLC
   ADC #BULLET_SPEED
-  STA enemiesBulletY
+  STA enemyBulletY
 
   CMP #$D7         
-  BCC EnemyBulletWallCompare   ; if enemiesBulletY < playerYPos
-  LDA enemiesBulletX
+  BCC EnemyBulletWallCompare   ; if enemyBulletY < playerYPos
+  LDA enemyBulletX
   CLC
   SBC #$10
   CMP playerXPos           
-  BCS EnemyBulletWallCompare       ; if enemiesBulletX - 10h > playerXPos
+  BCS EnemyBulletWallCompare       ; if enemyBulletX - 10h > playerXPos
   CLC
   ADC #$14
   CMP playerXPos           
-  BCC EnemyBulletWallCompare   ; if enemiesBulletX + 4h < playerXPos
+  BCC EnemyBulletWallCompare   ; if enemyBulletX + 4h < playerXPos
   
   JSR Restart
 
 EnemyBulletWallCompare:
-  LDA enemiesBulletY
+  LDA enemyBulletY
   CMP #BOTTOM_WALL
   BCC EnemyBulletMoveDone
 
 EnemyBulletSetOff:
   LDA #BULLET_OFF
-  STA enemiesBulletState
+  STA enemyBulletState
   LDA #$00
-  STA enemiesBulletX
+  STA enemyBulletX
   LDA #$00
-  STA enemiesBulletY
+  STA enemyBulletY
 
 EnemyBulletMoveDone:
 BulletMoveDone:
@@ -430,10 +430,10 @@ DrawSprites:
   LDA playerBulletY
   STA $0208
 
-  ; draw enemies
+  ; draw enemy
   CLC
 
-  LDA enemiesX
+  LDA enemyX
   TAX
   LDA $0213
   CMP #$FF
@@ -450,7 +450,7 @@ Next1_0:
 
 Next0_1:
   TXA
-  ADC #ENEMIES_HOR_GAP
+  ADC #ENEMY_HOR_GAP
   TAX
   LDA $0217
   CMP #$FF
@@ -466,7 +466,7 @@ Next1_1:
 
 Next0_2:
   TXA
-  ADC #ENEMIES_HOR_GAP
+  ADC #ENEMY_HOR_GAP
   TAX
   LDA $021B
   CMP #$FF
@@ -482,7 +482,7 @@ Next1_2:
 
 Next0_3:
   TXA
-  ADC #ENEMIES_HOR_GAP
+  ADC #ENEMY_HOR_GAP
   TAX
   LDA $021F
   CMP #$FF
@@ -498,7 +498,7 @@ Next1_3:
 
 Next0_4:
   TXA
-  ADC #ENEMIES_HOR_GAP
+  ADC #ENEMY_HOR_GAP
   TAX
   LDA $0223
   CMP #$FF
@@ -514,7 +514,7 @@ Next1_4:
 
 Next0_5:
   TXA
-  ADC #ENEMIES_HOR_GAP
+  ADC #ENEMY_HOR_GAP
   TAX
   LDA $0227
   CMP #$FF
@@ -529,7 +529,7 @@ Next1_5:
   STA $023F
 
 NextY:
-  LDA enemiesY
+  LDA enemyY
   STA $0210
   STA $0214
   STA $0218
@@ -538,7 +538,7 @@ NextY:
   STA $0224
 
   CLC
-  ADC #ENEMIES_VERT_GAP
+  ADC #ENEMY_VERT_GAP
   STA $0228
   STA $022C
   STA $0230
@@ -547,9 +547,9 @@ NextY:
   STA $023C
 
 Next:
-  LDA enemiesBulletX
+  LDA enemyBulletX
   STA $020F
-  LDA enemiesBulletY
+  LDA enemyBulletY
   STA $020C
 
   RTS
