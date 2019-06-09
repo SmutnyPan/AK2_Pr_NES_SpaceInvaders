@@ -267,18 +267,40 @@ EnemyMoveDown:
 EnemyShot:
   LDA enemyBulletState
   EOR #BULLET_ON
-  BEQ EnemyShotDone
+  BEQ EnemyMove
+  JSR EnemyShotSub
 
-  LDA playerXPos
+EnemyMoveDone:
+  RTS
+
+EnemyShotSub:
+  LDA #$FF
+  TAX
+EnemyShotLoop:
+  TXA
   CLC
-  ADC #$4
+  ADC #$04
+  CMP #$40
+  BCS EnemyShotDone
+  TAX
+  LDA $0210, x
+  CLC
+  SBC #$10
+  CMP playerXPos           
+  BCS EnemyShotLoop       ; if enemyX - 10h > playerXPos
+  CLC
+  ADC #$20
+  CMP playerXPos           
+  BCC EnemyShotLoop   ; if enemyX + 10h < playerXPos
+  LDA $0210, x
+  CMP #$FF
+  BEQ EnemyShotLoop
   STA enemyBulletX
   LDA enemyY
   STA enemyBulletY
   LDA #BULLET_ON
   STA enemyBulletState
-EnemyShotDone: 
-EnemyMoveDone:
+EnemyShotDone:
   RTS
 
 BulletMove:
@@ -334,7 +356,7 @@ CheckEnemy:
   CLC
   ADC #$04
   CMP #$40
-  BEQ PlayerBulletWallCompare
+  BCS PlayerBulletWallCompare
   TAY
   TAX
   LDA $0210, x
@@ -404,9 +426,9 @@ PlayerBulletMoveDone:
   CLC
   SBC #$0C
   CMP playerXPos           
-  BCS EnemyBulletWallCompare       ; if enemyBulletX - 10h > playerXPos
+  BCS EnemyBulletWallCompare       ; if enemyBulletX - 0Ch > playerXPos
   CLC
-  ADC #$10
+  ADC #$11
   CMP playerXPos           
   BCC EnemyBulletWallCompare   ; if enemyBulletX + 4h < playerXPos
   
