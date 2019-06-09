@@ -106,6 +106,7 @@ LoadPalettesLoop:
   LDA #$00          ; tell the ppu there is no background scrolling
   STA $2005
 
+Start:
 LoadSprites:
   LDX #$00              ; start at 0
 
@@ -117,7 +118,7 @@ LoadSpritesLoop:
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 64, continue down
 
-PlayerStartPosition:
+PlayerStart:
   LDA $203
   STA playerXPos
   LDA $20B
@@ -141,6 +142,7 @@ EnemiesStart:
   LDA #$00
   STA enemiesTimeCounter
   STA enemiesDirection
+  RTS
   
 
 Forever:
@@ -306,20 +308,20 @@ BulletMove:
   JMP PlayerSetBulletOff
 
 PlayerBulletEnemyCollision:
-  LDA enemiesX
-  CLC
-  SBC #$04
-  CMP playerBulletX
-  BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
-  CLC
-  ADC #ENEMIES_RIGHT_EDGE+$04
-  CMP playerBulletX
-  BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
-  LDA enemiesY
-  CLC
-  ADC #ENEMIES_VERT_GAP+$0A
-  CMP playerBulletY
-  BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
+;  LDA enemiesX
+;  CLC
+;  SBC #$04
+;  CMP playerBulletX
+;  BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
+;  CLC
+;  ADC #ENEMIES_RIGHT_EDGE+$04
+;  CMP playerBulletX
+;  BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
+;  LDA enemiesY
+;  CLC
+;  ADC #ENEMIES_VERT_GAP+$0A
+;  CMP playerBulletY
+;  BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
 
   LDA #$FC
   TAX
@@ -384,9 +386,25 @@ PlayerBulletMoveDone:
   ADC #BULLET_SPEED
   STA enemiesBulletY
 
+  CMP #$D7         
+  BCC EnemyBulletWallCompare   ; if enemiesBulletY < playerYPos
+  LDA enemiesBulletX
+  CLC
+  SBC #$10
+  CMP playerXPos           
+  BCS EnemyBulletWallCompare       ; if enemiesBulletX - 10h > playerXPos
+  CLC
+  ADC #$14
+  CMP playerXPos           
+  BCC EnemyBulletWallCompare   ; if enemiesBulletX + 4h < playerXPos
+  
+  JSR Restart
+
+EnemyBulletWallCompare:
+  LDA enemiesBulletY
   CMP #BOTTOM_WALL
   BCC EnemyBulletMoveDone
-  
+
 EnemyBulletSetOff:
   LDA #BULLET_OFF
   STA enemiesBulletState
@@ -536,6 +554,9 @@ Next:
 
   RTS
 
+Restart:
+  JSR Start
+  RTS
 
 ReadPlayerController:
   LDA #$01
