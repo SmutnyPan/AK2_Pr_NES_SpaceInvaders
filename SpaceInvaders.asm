@@ -6,7 +6,7 @@
   
 ; constants
 STATE_TITLE     = $00  ; displaying title screen
-STATE_PLAYING   = $01  ; move player/enemies/projectiles, check for collisions
+STATE_PLAYING   = $01  ; move player/enemy/projectiles, check for collisions
 STATE_GAMEOVER  = $02  ; displaying game over screen
 
 RIGHT_WALL      = $E8
@@ -17,9 +17,12 @@ LEFT_WALL       = $08
 BULLET_SPEED    = $03
 BULLET_ON       = %01
 BULLET_OFF      = %00
-ENEMY_TIME      = $40
-ENEMY_HOR_SPEED = $08
-ENEMY_VERT_SPEED= $08
+ENEMY_TIME    = $20
+ENEMY_HOR_STEP = $04
+ENEMY_VERT_STEP= $08
+ENEMY_HOR_GAP = $20
+ENEMY_VERT_GAP = $10
+ENEMY_RIGHT_EDGE = $5 * ENEMY_HOR_GAP + $08
 
 ; variables
   .rsset $0000      ;start variables at $0000
@@ -32,14 +35,13 @@ playerBulletX .rs 1
 playerBulletY .rs 1
 playerBulletState .rs 1
 
-enemiesBulletX .rs 1
-enemiesBulletY .rs 1
-enemiesBulletState .rs 1
-enemiesY1 .rs 1
-enemiesY2 .rs 1
-enemiesX .rs 1
-enemiesTimeCounter .rs 1
-enemiesDirection .rs 1
+enemyBulletX .rs 1
+enemyBulletY .rs 1
+enemyBulletState .rs 1
+enemyY .rs 1
+enemyX .rs 1
+enemyTimeCounter .rs 1
+enemyDirection .rs 1
 
 
 ; bank 0 - game code section
@@ -97,13 +99,14 @@ LoadPalettesLoop:
   BNE LoadPalettesLoop  ; if x = $20, 32 bytes copied, all done
 
 
-  LDA #%10000000   ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
+  LDA #%10000000    ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
   STA $2000
-  LDA #%00010000   ; enable sprites, enable background, no clipping on left side
+  LDA #%00010000    ; enable sprites, enable background, no clipping on left side
   STA $2001
-  LDA #$00        ;;tell the ppu there is no background scrolling
+  LDA #$00          ; tell the ppu there is no background scrolling
   STA $2005
 
+Start:
 LoadSprites:
   LDX #$00              ; start at 0
 
@@ -115,7 +118,7 @@ LoadSpritesLoop:
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 64, continue down
 
-PlayerStartPosition:
+PlayerStart:
   LDA $203
   STA playerXPos
   LDA $20B
@@ -127,20 +130,19 @@ PlayerStartPosition:
 
 EnemiesStart:
   LDA $210
-  STA enemiesY1
+  STA enemyY
   LDA $213
-  STA enemiesX
-  LDA $228
-  STA enemiesY2
+  STA enemyX
   LDA $20C
-  STA enemiesBulletY
+  STA enemyBulletY
   LDA $20F
-  STA enemiesBulletX
+  STA enemyBulletX
   LDA #BULLET_OFF
-  STA enemiesBulletState
+  STA enemyBulletState
   LDA #$00
-  STA enemiesTimeCounter
-  STA enemiesDirection
+  STA enemyTimeCounter
+  STA enemyDirection
+  RTS
   
 
 Forever:
@@ -214,69 +216,64 @@ PlayerShotDone:
   RTS                   ; end of PlayerMove
 
 EnemyMove:
-  INC enemiesTimeCounter
+  INC enemyTimeCounter
 
-  LDA enemiesTimeCounter
+  LDA enemyTimeCounter
   CLC
   CMP #ENEMY_TIME
   BCC EnemyMoveDone
 
   LDA #$00
-  STA enemiesTimeCounter
+  STA enemyTimeCounter
 
-  LDA enemiesDirection
+  LDA enemyDirection
   AND #%01
   BEQ EnemyMoveRight
 
 EnemyMoveLeft:
-  LDA enemiesX
+  LDA enemyX
   CLC
-  SBC #ENEMY_HOR_SPEED
+  SBC #ENEMY_HOR_STEP
   CMP #LEFT_WALL
   BCC EnemyMoveDown
-  STA enemiesX
+  STA enemyX
   JMP EnemyShot
 
 EnemyMoveRight:
-  LDA enemiesX
+  LDA enemyX
   CLC
-  ADC #ENEMY_HOR_SPEED
-  ADC #$A0
+  ADC #ENEMY_HOR_STEP
+  ADC #ENEMY_RIGHT_EDGE
   CMP #RIGHT_WALL
   BCS EnemyMoveDown
   CLC
-  SBC #$A0
-  STA enemiesX
+  SBC #ENEMY_RIGHT_EDGE
+  STA enemyX
   JMP EnemyShot
 
 EnemyMoveDown:
-  LDA enemiesY1
+  LDA enemyY
   CLC
-  ADC #ENEMY_VERT_SPEED
-  STA enemiesY1
+  ADC #ENEMY_VERT_STEP
+  STA enemyY
 
-  LDA enemiesY2
-  CLC
-  ADC #ENEMY_VERT_SPEED
-  STA enemiesY2
-
-  LDA enemiesDirection
+  LDA enemyDirection
   EOR #%01
-  STA enemiesDirection
+  STA enemyDirection
 
 EnemyShot:
-  LDA enemiesBulletState
+  LDA enemyBulletState
   EOR #BULLET_ON
   BEQ EnemyShotDone
 
   LDA playerXPos
   CLC
   ADC #$4
-  STA enemiesBulletX
-  LDA enemiesY1
-  STA enemiesBulletY
+  STA enemyBulletX
+  LDA enemyY
+  STA enemyBulletY
   LDA #BULLET_ON
-  STA enemiesBulletState
+  STA enemyBulletState
 EnemyShotDone: 
 EnemyMoveDone:
   RTS
@@ -285,30 +282,83 @@ BulletMove:
   ; player bullet move
   LDA playerBulletState
   AND #BULLET_ON
-  BEQ PlayerBulletMoveDone
+  BEQ PlayerBulletEnemyCollision     ; PlayerBulletMoveDone too far...
 
   LDA playerBulletY
   CLC
   SBC #BULLET_SPEED
   STA playerBulletY
 
-  CMP enemiesBulletY            ; playerBulletY < enemiesBulletY
-  BCS PlayerBulletWallCompare
+  LDX #%00
 
-  LDX #%01                    ; bullets collide?
+  CMP enemyBulletY            
+  BCS PlayerBulletEnemyCollision   ; if playerBulletY < enemyBulletY
+
+  LDX #%01                      ; bullets collide
 
   LDA playerBulletX
   CLC
   SBC #$04
-  CMP enemiesBulletX            ; playerBulletX - 4 < enemiesBulletX
-  BCS PlayerBulletWallCompare
+  CMP enemyBulletX            
+  BCS PlayerBulletEnemyCollision   ; if playerBulletX - 4h < enemyBulletX
   CLC
   ADC #$08
-  CMP enemiesBulletX           ; playerBulletX + 4 > enemiesBulletX
-  BCS PlayerSetBulletOff
+  CMP enemyBulletX            
+  BCC PlayerBulletEnemyCollision        ; if playerBulletX + 4h > enemyBulletX
+  JMP PlayerSetBulletOff
+
+PlayerBulletEnemyCollision:
+;  LDA enemyX
+;  CLC
+;  SBC #$04
+;  CMP playerBulletX
+;  BCS PlayerBulletWallCompare     ; if playerBulletX < enemyX
+;  CLC
+;  ADC #ENEMY_RIGHT_EDGE+$04
+;  CMP playerBulletX
+;  BCC PlayerBulletWallCompare     ; if playerBulletX > enemyX + A8h
+;  LDA enemyY
+;  CLC
+;  ADC #ENEMY_VERT_GAP+$0A
+;  CMP playerBulletY
+;  BCC PlayerBulletWallCompare     ; if playerBulletY > enemyY + 18h
+
+  LDA #$FC
+  TAX
+  TAY
+CheckEnemies:
+  TYA
+  CLC
+  ADC #$04
+  CMP #$40
+  BEQ PlayerBulletWallCompare
+  TAY
+  TAX
+  LDA $0210, x
+  CLC
+  ADC #$08
+  CMP playerBulletY
+  BCC CheckEnemies              ; if playerBulletY > enemyY + 08h
+  INX
+  INX
+  INX
+  LDA $0210, x
+  CLC
+  SBC #$04
+  CMP playerBulletX
+  BCS CheckEnemies              ; if playerBulletX < enemyX
+  CLC
+  ADC #$0A
+  CMP playerBulletX
+  BCC CheckEnemies              ; if playerBulletX > enemyX + A8h
+  LDA #$FF
+  CMP $0210, x
+  BEQ CheckEnemies
+  STA $0210, x
+  JMP PlayerSetBulletOff
 
 PlayerBulletWallCompare:
-  LDX #%00                  ; bullets dont collide
+  LDX #%00                      ; bullets dont collide
   LDA playerBulletY
   CMP #TOP_WALL
   BCS PlayerBulletMoveDone
@@ -323,29 +373,45 @@ PlayerSetBulletOff:
 
 PlayerBulletMoveDone:
   ; enemy bullet move
-  LDA enemiesBulletState
+  LDA enemyBulletState
   AND #BULLET_ON
   BEQ EnemyBulletMoveDone
 
   TXA
-  EOR #%01                ; bullets collide?
-  BEQ EnemyBulletSetOff
+  EOR #%01
+  BEQ EnemyBulletSetOff     ; if bullets collide
 
-  LDA enemiesBulletY
+  LDA enemyBulletY
   CLC
   ADC #BULLET_SPEED
-  STA enemiesBulletY
+  STA enemyBulletY
 
+  CMP #$D7         
+  BCC EnemyBulletWallCompare   ; if enemyBulletY < playerYPos
+  LDA enemyBulletX
+  CLC
+  SBC #$10
+  CMP playerXPos           
+  BCS EnemyBulletWallCompare       ; if enemyBulletX - 10h > playerXPos
+  CLC
+  ADC #$14
+  CMP playerXPos           
+  BCC EnemyBulletWallCompare   ; if enemyBulletX + 4h < playerXPos
+  
+  JSR Restart
+
+EnemyBulletWallCompare:
+  LDA enemyBulletY
   CMP #BOTTOM_WALL
   BCC EnemyBulletMoveDone
-  
+
 EnemyBulletSetOff:
   LDA #BULLET_OFF
-  STA enemiesBulletState
+  STA enemyBulletState
   LDA #$00
-  STA enemiesBulletX
+  STA enemyBulletX
   LDA #$00
-  STA enemiesBulletY
+  STA enemyBulletY
 
 EnemyBulletMoveDone:
 BulletMoveDone:
@@ -364,34 +430,106 @@ DrawSprites:
   LDA playerBulletY
   STA $0208
 
-  ; draw enemies
+  ; draw enemy
   CLC
 
-  LDA enemiesX
+  LDA enemyX
+  TAX
+  LDA $0213
+  CMP #$FF
+  BEQ Next1_0           ; if not alive
+  TXA
   STA $0213
+
+Next1_0:
+  LDA $022B
+  CMP #$FF
+  BEQ Next0_1 
+  TXA
   STA $022B
 
-  ADC #$20
+Next0_1:
+  TXA
+  ADC #ENEMY_HOR_GAP
+  TAX
+  LDA $0217
+  CMP #$FF
+  BEQ Next1_1
+  TXA
   STA $0217
+Next1_1:
+  LDA $022F
+  CMP #$FF
+  BEQ Next0_2
+  TXA
   STA $022F
 
-  ADC #$20
+Next0_2:
+  TXA
+  ADC #ENEMY_HOR_GAP
+  TAX
+  LDA $021B
+  CMP #$FF
+  BEQ Next1_2
+  TXA
   STA $021B
+Next1_2:
+  LDA $0233
+  CMP #$FF
+  BEQ Next0_3
+  TXA
   STA $0233
 
-  ADC #$20
+Next0_3:
+  TXA
+  ADC #ENEMY_HOR_GAP
+  TAX
+  LDA $021F
+  CMP #$FF
+  BEQ Next1_3
+  TXA
   STA $021F
+Next1_3:
+  LDA $0237
+  CMP #$FF
+  BEQ Next0_4
+  TXA
   STA $0237
 
-  ADC #$20
+Next0_4:
+  TXA
+  ADC #ENEMY_HOR_GAP
+  TAX
+  LDA $0223
+  CMP #$FF
+  BEQ Next1_4
+  TXA
   STA $0223
+Next1_4:
+  LDA $023B
+  CMP #$FF
+  BEQ Next0_5
+  TXA
   STA $023B
 
-  ADC #$20
+Next0_5:
+  TXA
+  ADC #ENEMY_HOR_GAP
+  TAX
+  LDA $0227
+  CMP #$FF
+  BEQ Next1_5
+  TXA
   STA $0227
+Next1_5:
+  LDA $023F
+  CMP #$FF
+  BEQ NextY
+  TXA
   STA $023F
 
-  LDA enemiesY1
+NextY:
+  LDA enemyY
   STA $0210
   STA $0214
   STA $0218
@@ -399,7 +537,8 @@ DrawSprites:
   STA $0220
   STA $0224
 
-  LDA enemiesY2
+  CLC
+  ADC #ENEMY_VERT_GAP
   STA $0228
   STA $022C
   STA $0230
@@ -407,13 +546,17 @@ DrawSprites:
   STA $0238
   STA $023C
 
-  LDA enemiesBulletX
+Next:
+  LDA enemyBulletX
   STA $020F
-  LDA enemiesBulletY
+  LDA enemyBulletY
   STA $020C
 
   RTS
 
+Restart:
+  JSR Start
+  RTS
 
 ReadPlayerController:
   LDA #$01
@@ -428,7 +571,9 @@ ReadPlayerControllerLoop:
   DEX
   BNE ReadPlayerControllerLoop
   RTS
- 
+
+
+
 ; bank 1 - vectors section
   
   .bank 1
@@ -447,19 +592,19 @@ sprites:
 
   .db $00, $2, $00, $00   ;enemyBullet           20C
 
-  .db $08, $3, $00, $20   ;enemy1.1              210
-  .db $08, $3, $00, $40   ;enemy1.2              214
-  .db $08, $3, $00, $60   ;enemy1.3              218
-  .db $08, $3, $00, $80   ;enemy1.4              21C
-  .db $08, $3, $00, $A0   ;enemy1.5              220
-  .db $08, $3, $00, $C0   ;enemy1.6              224
+  .db $08, $3, $00, $20   ;enemy0.0              210
+  .db $08, $3, $00, $40   ;enemy0.1              214
+  .db $08, $3, $00, $60   ;enemy0.2              218
+  .db $08, $3, $00, $80   ;enemy0.3              21C
+  .db $08, $3, $00, $A0   ;enemy0.4              220
+  .db $08, $3, $00, $C0   ;enemy0.5              224
 
-  .db $18, $3, $00, $20   ;enemy2.1              228
-  .db $18, $3, $00, $40   ;enemy2.2              22C
-  .db $18, $3, $00, $60   ;enemy2.3              230
-  .db $18, $3, $00, $80   ;enemy2.4              234
-  .db $18, $3, $00, $A0   ;enemy2.5              238
-  .db $18, $3, $00, $C0   ;enemy2.6              23C
+  .db $18, $3, $00, $20   ;enemy1.0              228
+  .db $18, $3, $00, $40   ;enemy1.1              22C
+  .db $18, $3, $00, $60   ;enemy1.2              230
+  .db $18, $3, $00, $80   ;enemy1.3              234
+  .db $18, $3, $00, $A0   ;enemy1.4              238
+  .db $18, $3, $00, $C0   ;enemy1.5              23C
 
 
 
