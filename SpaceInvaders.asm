@@ -17,12 +17,13 @@ LEFT_WALL       = $08
 BULLET_SPEED    = $03
 BULLET_ON       = %01
 BULLET_OFF      = %00
-ENEMY_TIME    = $20
+ENEMY_TIME    = $30
 ENEMY_HOR_STEP = $04
 ENEMY_VERT_STEP= $08
 ENEMY_HOR_GAP = $20
 ENEMY_VERT_GAP = $10
 ENEMY_RIGHT_EDGE = $5 * ENEMY_HOR_GAP + $08
+ENEMY_COUNT = $0C
 
 ; variables
   .rsset $0000      ;start variables at $0000
@@ -42,7 +43,7 @@ enemyY .rs 1
 enemyX .rs 1
 enemyTimeCounter .rs 1
 enemyDirection .rs 1
-
+enemyCount .rs 1
 
 ; bank 0 - game code section
 
@@ -128,7 +129,7 @@ PlayerStart:
   LDA #BULLET_OFF
   STA playerBulletState
 
-EnemiesStart:
+EnemyStart:
   LDA $210
   STA enemyY
   LDA $213
@@ -142,6 +143,8 @@ EnemiesStart:
   LDA #$00
   STA enemyTimeCounter
   STA enemyDirection
+  LDA #ENEMY_COUNT
+  STA enemyCount
   RTS
   
 
@@ -326,7 +329,7 @@ PlayerBulletEnemyCollision:
   LDA #$FC
   TAX
   TAY
-CheckEnemies:
+CheckEnemy:
   TYA
   CLC
   ADC #$04
@@ -338,7 +341,7 @@ CheckEnemies:
   CLC
   ADC #$08
   CMP playerBulletY
-  BCC CheckEnemies              ; if playerBulletY > enemyY + 08h
+  BCC CheckEnemy              ; if playerBulletY > enemyY + 08h
   INX
   INX
   INX
@@ -346,16 +349,25 @@ CheckEnemies:
   CLC
   SBC #$04
   CMP playerBulletX
-  BCS CheckEnemies              ; if playerBulletX < enemyX
+  BCS CheckEnemy              ; if playerBulletX < enemyX
   CLC
   ADC #$0A
   CMP playerBulletX
-  BCC CheckEnemies              ; if playerBulletX > enemyX + A8h
+  BCC CheckEnemy              ; if playerBulletX > enemyX + A8h
   LDA #$FF
   CMP $0210, x
-  BEQ CheckEnemies
+  BEQ CheckEnemy
   STA $0210, x
+  LDX enemyCount
+  DEX
+  TXA
+  CMP #$00
+  BEQ PlayerWon
+  STX enemyCount
   JMP PlayerSetBulletOff
+
+PlayerWon:
+  JSR Restart
 
 PlayerBulletWallCompare:
   LDX #%00                      ; bullets dont collide
@@ -390,11 +402,11 @@ PlayerBulletMoveDone:
   BCC EnemyBulletWallCompare   ; if enemyBulletY < playerYPos
   LDA enemyBulletX
   CLC
-  SBC #$10
+  SBC #$0C
   CMP playerXPos           
   BCS EnemyBulletWallCompare       ; if enemyBulletX - 10h > playerXPos
   CLC
-  ADC #$14
+  ADC #$10
   CMP playerXPos           
   BCC EnemyBulletWallCompare   ; if enemyBulletX + 4h < playerXPos
   
