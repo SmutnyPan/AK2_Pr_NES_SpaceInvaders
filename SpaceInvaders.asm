@@ -506,88 +506,26 @@ Next0_5:
 Next1_5:
   LDA $023F
   CMP #$FF
-  BEQ Next0_0Y
+  BEQ NextY
   TXA
   STA $023F
 
-Next0_0Y:
+NextY:
   LDA enemiesY
-  TAX
-  LDA $0210
-  CMP #$FF
-  BEQ Next0_1Y
-  TXA
   STA $0210
-Next0_1Y:
-  LDA $0214
-  CMP #$FF
-  BEQ Next0_2Y
-  TXA
   STA $0214
-Next0_2Y:
-  LDA $0218
-  CMP #$FF
-  BEQ Next0_3Y
-  TXA
   STA $0218
-Next0_3Y:
-  LDA $021C
-  CMP #$FF
-  BEQ Next0_4Y
-  TXA
   STA $021C
-Next0_4Y:
-  LDA $0220
-  CMP #$FF
-  BEQ Next0_5Y
-  TXA
   STA $0220
-Next0_5Y:
-  LDA $0224
-  CMP #$FF
-  BEQ Next1_0Y
-  TXA
   STA $0224
 
-Next1_0Y:
-  TXA
   CLC
   ADC #ENEMIES_VERT_GAP
-  TAX
-  LDA $0228
-  CMP #$FF
-  BEQ Next1_1Y
-  TXA
   STA $0228
-Next1_1Y:
-  LDA $022C
-  CMP #$FF
-  BEQ Next1_2Y
-  TXA
   STA $022C
-Next1_2Y:
-  LDA $0230
-  CMP #$FF
-  BEQ Next1_3Y
-  TXA
   STA $0230
-Next1_3Y:
-  LDA $0234
-  CMP #$FF
-  BEQ Next1_4Y
-  TXA
   STA $0234
-Next1_4Y:
-  LDA $0238
-  CMP #$FF
-  BEQ Next1_5Y
-  TXA
   STA $0238
-Next1_5Y:
-  LDA $023C
-  CMP #$FF
-  BEQ Next
-  TXA
   STA $023C
 
 Next:
