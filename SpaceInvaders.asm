@@ -17,7 +17,7 @@ LEFT_WALL       = $08
 BULLET_SPEED    = $03
 BULLET_ON       = %01
 BULLET_OFF      = %00
-ENEMY_TIME    = $30
+ENEMY_TIME    = $20
 ENEMY_HOR_STEP = $04
 ENEMY_VERT_STEP= $08
 ENEMY_HOR_GAP = $20
@@ -197,6 +197,11 @@ PlayerMoveLeft:
   BCC PlayerMoveLeftDone
   STA playerXPos        ; save player position
 PlayerMoveLeftDone:
+
+  LDA enemyY
+  CMP #$D7
+  BCC PlayerShot
+  JSR Restart
 
 PlayerShot:
   LDA buttonsPressed
