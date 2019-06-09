@@ -9,6 +9,7 @@ Kod napisano zgodnie ze składnią wymaganą przez kompilator NESASM3.
 Projekt wykonali:
 
   Tomasz Spodzieja
+  
   Wojciech Sadlik
 
 
