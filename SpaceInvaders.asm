@@ -307,89 +307,52 @@ BulletMove:
 
 PlayerBulletEnemyCollision:
   LDA enemiesX
+  CLC
+  SBC #$04
   CMP playerBulletX
   BCS PlayerBulletWallCompare     ; if playerBulletX < enemiesX
   CLC
-  ADC #ENEMIES_RIGHT_EDGE
+  ADC #ENEMIES_RIGHT_EDGE+$04
   CMP playerBulletX
   BCC PlayerBulletWallCompare     ; if playerBulletX > enemiesX + A8h
   LDA enemiesY
   CLC
-  ADC #ENEMIES_VERT_GAP+$10
+  ADC #ENEMIES_VERT_GAP+$0A
   CMP playerBulletY
   BCC PlayerBulletWallCompare     ; if playerBulletY > enemiesY + 18h
-  
-  ; vector translation
-  ; (playerBulletX, playerBulletY) - (enemiesX, enemiesY)
-  LDA playerBulletX
-  PHA                             ; push playerBulletX
-  CLC
-  SBC enemiesX
-  STA playerBulletX
-  LDA playerBulletY
-  PHA                             ; push playerBulletY
-  CLC
-  SBC enemiesY
-  STA playerBulletY
 
-  LDY #%00
-  LDA playerBulletX
-Div_hor:
-  CLC
-  SBC #ENEMIES_HOR_GAP
-  INY
-  BCS Div_hor
-  DEY
-  TYA
-  STA $0400                            ; store floor(playerBulletX/ENEMIES_HOR_STEP) in  $0400
-
-  LDY #%00
-  LDA playerBulletY
-Div_vert:
-  INY
-  CLC
-  SBC #ENEMIES_VERT_GAP
-  BCS Div_vert
-  DEY
-
-  LDA #$FA
-Multiplication1:
-  CLC
-  ADC #$06
-  DEY
-  BPL Multiplication1
-
-; add floor(playerBulletX/ENEMIES_HOR_STEP) from stack
-  CLC
-  ADC $0400
-  TAX
-
-  PLA                             ; pull playerBulletY
-  STA playerBulletY
-  PLA                             ; pull playerBulletX
-  STA playerBulletX
-
-; enemy address calculation
   LDA #$FC
-Multiplication2:
+  TAX
+  TAY
+CheckEnemies:
+  TYA
   CLC
   ADC #$04
-  DEX
-  BPL Multiplication2
-
+  CMP #$40
+  BEQ PlayerBulletWallCompare
+  TAY
   TAX
+  LDA $0210, x
+  CLC
+  ADC #$08
+  CMP playerBulletY
+  BCC CheckEnemies              ; if playerBulletY > enemyY + 08h
+  INX
+  INX
+  INX
+  LDA $0210, x
+  CLC
+  SBC #$04
+  CMP playerBulletX
+  BCS CheckEnemies              ; if playerBulletX < enemyX
+  CLC
+  ADC #$0A
+  CMP playerBulletX
+  BCC CheckEnemies              ; if playerBulletX > enemyX + A8h
   LDA #$FF
   CMP $0210, x
-  BEQ PlayerBulletWallCompare
-
+  BEQ CheckEnemies
   STA $0210, x
-  TXA
-  CLC
-  ADC #$03
-  TAX
-  LDA #$FF
-  STA $0210, x
-
   JMP PlayerSetBulletOff
 
 PlayerBulletWallCompare:
