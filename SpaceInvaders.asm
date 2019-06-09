@@ -371,11 +371,11 @@ CheckEnemy:
   CLC
   SBC #$04
   CMP playerBulletX
-  BCS CheckEnemy              ; if playerBulletX < enemyX
+  BCS CheckEnemy              ; if playerBulletX < enemyX - 4h
   CLC
   ADC #$0A
   CMP playerBulletX
-  BCC CheckEnemy              ; if playerBulletX > enemyX + A8h
+  BCC CheckEnemy              ; if playerBulletX > enemyX + Eh
   LDA #$FF
   CMP $0210, x
   BEQ CheckEnemy
