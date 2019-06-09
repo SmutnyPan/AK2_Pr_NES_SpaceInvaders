@@ -10,7 +10,7 @@ Projekt wykonali:
   Tomasz Spodzieja
   Wojciech Sadlik
 
-Wykorzystane materiały:
+Wykorzystane materiały:\n
   http://wiki.nesdev.com/w/index.php/NES_reference_guide
   
   http://wiki.nesdev.com/w/index.php/Programming_guide
