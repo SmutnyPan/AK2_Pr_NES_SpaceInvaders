@@ -1,19 +1,19 @@
 # AK2_Pr_NES_SpaceInvaders
 
-Projekt do kursu Architektura Komputerów 2 dla kierunku Informatyka na wydziale Elektroniki Politechniki Wrocławskiej.
+Simple Space Invaders clone made for Nintendo Entertainment System architecture.
 
-Gra typu Space Invaders na konsolę NES.
+Project for "Architektura Komputerów" (Computers Architecture CS course on Wroclaw University of Science and Technology).
 
-Kod napisano zgodnie ze składnią wymaganą przez kompilator NESASM3.
+Code uses syntax compatible with NESASM3 compiler.
 
-Projekt wykonali:
+Authors:
 
   Tomasz Spodzieja
   
   Wojciech Sadlik
 
 
-Wykorzystane materiały:
+Materials:
 
   http://wiki.nesdev.com/w/index.php/NES_reference_guide
   
